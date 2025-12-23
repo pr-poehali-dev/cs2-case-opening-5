@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
+import SteamLogin from '@/components/SteamLogin';
+import { getUser, isAdmin, type SteamUser } from '@/lib/auth';
 
 type Rarity = 'legendary' | 'epic' | 'rare' | 'uncommon' | 'common';
 
@@ -38,6 +40,15 @@ const rarityColors: Record<Rarity, string> = {
 };
 
 const Admin = () => {
+  const [user, setUser] = useState<SteamUser | null>(null);
+  const [hasAccess, setHasAccess] = useState(false);
+
+  useEffect(() => {
+    const currentUser = getUser();
+    setUser(currentUser);
+    setHasAccess(isAdmin(currentUser));
+  }, []);
+
   const [cases, setCases] = useState<CaseType[]>([
     { id: 1, name: 'Стартовый кейс', price: 100, image: '🎁', description: 'Идеально для новичков' },
     { id: 2, name: 'Золотой кейс', price: 500, image: '💎', description: 'Повышенный шанс редких скинов' },
@@ -129,6 +140,24 @@ const Admin = () => {
     setItemForm({ name: item.name, rarity: item.rarity, image: item.image, price: item.price, caseId: item.caseId });
     setItemDialogOpen(true);
   };
+
+  const handleLogin = (steamUser: SteamUser) => {
+    setUser(steamUser);
+    setHasAccess(isAdmin(steamUser));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    setHasAccess(false);
+  };
+
+  if (!user || !hasAccess) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <SteamLogin onLogin={handleLogin} onLogout={handleLogout} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

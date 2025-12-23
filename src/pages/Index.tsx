@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
+import { getUser, type SteamUser } from '@/lib/auth';
 
 type Rarity = 'legendary' | 'epic' | 'rare' | 'uncommon' | 'common';
 
@@ -59,10 +61,16 @@ const allItems: Item[] = [
 ];
 
 const Index = () => {
+  const [user, setUser] = useState<SteamUser | null>(null);
   const [balance, setBalance] = useState(5000);
   const [inventory, setInventory] = useState<Item[]>([]);
   const [isOpening, setIsOpening] = useState(false);
   const [wonItem, setWonItem] = useState<Item | null>(null);
+
+  useEffect(() => {
+    const currentUser = getUser();
+    setUser(currentUser);
+  }, []);
 
   const openCase = (caseItem: CaseType) => {
     if (balance < caseItem.price) {
@@ -116,6 +124,17 @@ const Index = () => {
                   <span className="text-xl font-bold text-primary">{balance}₽</span>
                 </CardContent>
               </Card>
+              {user && (
+                <Card className="border-primary/20">
+                  <CardContent className="py-2 px-4 flex items-center gap-2">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback>{user.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium">{user.name}</span>
+                  </CardContent>
+                </Card>
+              )}
               <Button variant="outline" onClick={() => window.location.href = '/admin'} className="border-primary/50">
                 <Icon name="Settings" className="text-primary" size={20} />
               </Button>
