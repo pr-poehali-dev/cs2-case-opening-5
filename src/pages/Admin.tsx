@@ -9,8 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
-import SteamLogin from '@/components/SteamLogin';
-import { getUser, isAdmin, type SteamUser } from '@/lib/auth';
+import AdminLogin from '@/components/AdminLogin';
 
 type Rarity = 'legendary' | 'epic' | 'rare' | 'uncommon' | 'common';
 
@@ -40,13 +39,11 @@ const rarityColors: Record<Rarity, string> = {
 };
 
 const Admin = () => {
-  const [user, setUser] = useState<SteamUser | null>(null);
-  const [hasAccess, setHasAccess] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const currentUser = getUser();
-    setUser(currentUser);
-    setHasAccess(isAdmin(currentUser));
+    const authStatus = localStorage.getItem('adminAuth');
+    setIsAuthenticated(authStatus === 'true');
   }, []);
 
   const [cases, setCases] = useState<CaseType[]>([
@@ -141,20 +138,20 @@ const Admin = () => {
     setItemDialogOpen(true);
   };
 
-  const handleLogin = (steamUser: SteamUser) => {
-    setUser(steamUser);
-    setHasAccess(isAdmin(steamUser));
+  const handleLogin = () => {
+    setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
-    setUser(null);
-    setHasAccess(false);
+    localStorage.removeItem('adminAuth');
+    setIsAuthenticated(false);
+    toast.success('Вы вышли из системы');
   };
 
-  if (!user || !hasAccess) {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <SteamLogin onLogin={handleLogin} onLogout={handleLogout} />
+        <AdminLogin onLogin={handleLogin} />
       </div>
     );
   }
@@ -170,10 +167,16 @@ const Admin = () => {
                 Админ-панель
               </h1>
             </div>
-            <Button variant="outline" onClick={() => window.location.href = '/'}>
-              <Icon name="Home" size={20} className="mr-2" />
-              На главную
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleLogout}>
+                <Icon name="LogOut" size={20} className="mr-2" />
+                Выйти
+              </Button>
+              <Button variant="outline" onClick={() => window.location.href = '/'}>
+                <Icon name="Home" size={20} className="mr-2" />
+                На главную
+              </Button>
+            </div>
           </div>
         </div>
       </header>
