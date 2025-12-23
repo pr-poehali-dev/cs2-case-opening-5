@@ -116,8 +116,8 @@ const Index = () => {
                   <span className="text-xl font-bold text-primary">{balance}₽</span>
                 </CardContent>
               </Card>
-              <Button variant="outline" size="icon" className="border-primary/50">
-                <Icon name="User" className="text-primary" size={20} />
+              <Button variant="outline" onClick={() => window.location.href = '/admin'} className="border-primary/50">
+                <Icon name="Settings" className="text-primary" size={20} />
               </Button>
             </div>
           </div>
